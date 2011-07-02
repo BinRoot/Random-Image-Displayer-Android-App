@@ -227,7 +227,7 @@ public class FatPitaPlusActivity extends Activity {
 			// 2011: 6589..7452
 			int year = 0;
 			int eatLiverRand = (int) (Math.random()*7452) +1;
-			if(eatLiverRand>=1 || eatLiverRand<=780) {
+			if(eatLiverRand>=1 && eatLiverRand<=780) {
 				year = 2005;
 			}
 			else if(eatLiverRand>=781 && eatLiverRand<=1656) {
