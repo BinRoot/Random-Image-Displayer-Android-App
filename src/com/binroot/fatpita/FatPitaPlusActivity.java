@@ -72,6 +72,7 @@ public class FatPitaPlusActivity extends Activity {
 	}
 	
 	private void updateImage(String url) {
+		appState.setURL(url);
 		new DownloadImageTask().execute();
 	}
 	
@@ -273,7 +274,7 @@ public class FatPitaPlusActivity extends Activity {
 	    		mHandler.post(new Runnable() {
 					
 					public void run() {
-						iv.setImageDrawable(loadNewImage(randomURL()));
+						iv.setImageDrawable(loadNewImage(appState.getURL()));
 					}
 				});
 	    		
