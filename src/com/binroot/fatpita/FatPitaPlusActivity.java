@@ -8,27 +8,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.DialerFilter;
 import android.widget.ImageView;
 
 public class FatPitaPlusActivity extends Activity {
 
 	ImageView iv;
 	ApplicationStart appState;
+	private static ProgressDialog Dialog;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -68,7 +72,7 @@ public class FatPitaPlusActivity extends Activity {
 	}
 	
 	private void updateImage(String url) {
-		iv.setImageDrawable(loadNewImage(url));
+		new DownloadImageTask().execute();
 	}
 	
 	
@@ -258,6 +262,70 @@ public class FatPitaPlusActivity extends Activity {
 		}
 		
 		return url;
+	}
+	
+	private class DownloadImageTask extends AsyncTask<Void, Void, Void> {
+	    /** The system calls this to perform work in a worker thread and
+	      * delivers it the parameters given to AsyncTask.execute() */
+	    protected Void doInBackground(Void... arg0) {
+	    	try {
+	    		Log.d("fatpita", "* Loading now!");
+	    		mHandler.post(new Runnable() {
+					
+					public void run() {
+						iv.setImageDrawable(loadNewImage(randomURL()));
+					}
+				});
+	    		
+			} catch (Exception e) { }
+			return null;
+	    }
+	    
+	    @Override
+		protected void onPostExecute(Void result) {
+	    	Log.d("fatpita","* PostExecute");
+	        Dialog.dismiss();
+		}
+	    
+	    @Override
+	    protected void onPreExecute(){
+	    	Log.d("Async","Dialog shown!");
+	    	String rand = getRandomString();
+	    	Dialog = new ProgressDialog(FatPitaPlusActivity.this);
+	    	Dialog.setMax(100);
+	    	Dialog.setMessage(rand);
+	    	Dialog.show();
+			//Dialog = ProgressDialog.show(FatPitaPlusActivity.this, "", rand, true);
+	    }
+	}
+	
+	private String getRandomString() {
+		String retStr = "Loading";
+		String [] strList = {
+				"Loading...",
+				"Trying...",
+				"Fetching...",
+				"Thinking...",
+				"Looking...",
+				"Updating...",
+				"Gathering...",
+				"Searching...",
+				"Getting...",
+				"Computing...",
+				"Calculating...",
+				"Tasking...",
+				"Downloading...",
+				"This one's good...",
+				"Gonna love this...",
+				"Here it comes...",
+				"Almost here...",
+				"LOL...",
+				"OMG...",
+				"WTF..."
+			};
+		int randIndex = (int) (Math.random()*strList.length);
+		retStr = strList[randIndex];
+		return retStr;
 	}
 	
 	private Drawable loadImageFromWebOperations(String url) 
