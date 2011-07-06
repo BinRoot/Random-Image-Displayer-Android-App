@@ -15,8 +15,10 @@ public final class R {
         public static final int back1pressed=0x7f020001;
         public static final int back_lg=0x7f020002;
         public static final int blank=0x7f020003;
-        public static final int icon=0x7f020004;
-        public static final int icon2=0x7f020005;
+        public static final int clear=0x7f020004;
+        public static final int clicked=0x7f020005;
+        public static final int icon=0x7f020006;
+        public static final int icon2=0x7f020007;
     }
     public static final class id {
         public static final int button=0x7f050004;
