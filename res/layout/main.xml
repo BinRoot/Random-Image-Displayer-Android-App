@@ -12,10 +12,9 @@
     	<Button 
 			android:id="@+id/button_back"
 			android:layout_centerVertical="true"
-			android:layout_width="50dip"
-			android:layout_height="fill_parent"
+			android:layout_width="90dip"
+			android:layout_height="40dip"
 			android:layout_marginLeft="10dip"
-			android:layout_alignParentTop="true"
 			android:layout_alignParentLeft="true"
 			android:background="@drawable/back_lg"/>
 		<TextView 
@@ -23,6 +22,14 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_centerInParent="true"/>
+		<Button 
+			android:id="@+id/button_fav"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:background="@android:drawable/btn_star"
+			android:layout_alignParentRight="true"
+			android:layout_centerVertical="true"
+			android:layout_marginRight="10dip"/>
     </RelativeLayout>
 	
 	<ImageView 

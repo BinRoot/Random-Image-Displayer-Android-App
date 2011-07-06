@@ -9,12 +9,14 @@ public class ApplicationStart extends Application {
 	private String currentURL;
 	private ArrayList<String> history;
 	private int backCursor = 0;
+	private ArrayList<String> favList;
 	
 	
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		history = new ArrayList<String>();
+		favList = new ArrayList<String>();
 	}
 
 	public String getURL(){
@@ -38,5 +40,17 @@ public class ApplicationStart extends Application {
 	
 	public void setBackCursor(int backCursor) {
 		this.backCursor = backCursor;
+	}
+	
+	public ArrayList<String> getFavList() {
+		return favList;
+	}
+	
+	public void addFav( String url ) {
+		favList.add(url);
+	}
+	
+	public void removeFav( String url ) {
+		favList.remove(url);
 	}
 }

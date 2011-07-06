@@ -31,6 +31,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 public class FatPitaPlusActivity extends Activity {
 
@@ -38,16 +39,44 @@ public class FatPitaPlusActivity extends Activity {
 	ApplicationStart appState;
 	private static ProgressDialog Dialog;
 	Button mainButton;
+	Button favButton;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		iv = (ImageView) findViewById(R.id.img);
 		mHandler = new Handler();
+		favButton = (Button) findViewById(R.id.button_fav);
 
+		Toast.makeText(this, "Tap anywhere for another pic!", Toast.LENGTH_SHORT).show();;
+		
 		appState = ((ApplicationStart)getApplicationContext());
 
-		Log.d("fatpita", "appState = "+appState+", "+appState.getURL());
+
+		FileInputStream fis = null;
+		try {
+			Log.d("fatpita", "Opening file favList");
+			fis = openFileInput("favList");
+			fis.close();
+		} catch (FileNotFoundException e) {
+			Log.d("fatpita", "Could not find favList");
+
+			FileOutputStream fos = null;
+			try {
+				Log.d("fatpita", "Creating favList");
+				fos = openFileOutput("favList", Context.MODE_PRIVATE);
+				fos.close();
+
+			} catch (FileNotFoundException e2) {
+				Log.d("fatpita", "Could not create favList");
+			} catch (IOException e3) {
+				Log.d("fatpita", "Could not close fos");
+			}
+		} catch (IOException e) {
+			Log.d("fatpita", "Could not close fis");
+		}
+
+
 
 		if(appState.getURL()!=null) {
 			updateImage(appState.getURL());
@@ -56,17 +85,18 @@ public class FatPitaPlusActivity extends Activity {
 			updateImage();
 		}
 
+
+
 		mainButton = (Button) findViewById(R.id.button);
 		mainButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				mHandler.post(new Runnable() {
 					public void run() {
+						// TODO: dialog box starts here
 						mainButton.setBackgroundResource(R.drawable.clicked);
 						updateImage();
 					}
 				});
-				
-				
 			}
 		});
 
@@ -76,6 +106,37 @@ public class FatPitaPlusActivity extends Activity {
 				goBack();
 			}
 		});
+
+
+		favButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				if(appState.getFavList().contains(appState.getURL())) {
+					appState.removeFav(appState.getURL());
+					favButton.setBackgroundResource(android.R.drawable.btn_star);
+				}
+				else {
+					appState.addFav(appState.getURL());
+					favButton.setBackgroundResource(android.R.drawable.btn_star_big_on);
+					String url = appState.getURL();
+					addToFav(url);
+				}
+
+			}
+		});
+	}
+
+	private void addToFav(String url) {
+		FileOutputStream fos = null;
+		try {
+			Log.d("fatpita", "Opening file favList");
+			fos = openFileOutput("favList", Context.MODE_APPEND);
+
+			fos.write(url.getBytes());
+			fos.write(" ".getBytes());
+
+			fos.close();
+		} catch (FileNotFoundException e) {Log.d("fatpita", "Could not find file favList");} 
+		catch (IOException e) {Log.d("fatpita", "Could not close file favList");}
 	}
 
 	private void updateImage() {
@@ -85,6 +146,14 @@ public class FatPitaPlusActivity extends Activity {
 
 	private void updateImage(String url) {
 		appState.setURL(url);
+
+		if(!appState.getFavList().contains(appState.getURL())) {
+			favButton.setBackgroundResource(android.R.drawable.btn_star);
+		}
+		else {
+			favButton.setBackgroundResource(android.R.drawable.btn_star_big_on);
+		}
+
 		new DownloadImageTask().execute();
 	}
 
@@ -94,10 +163,11 @@ public class FatPitaPlusActivity extends Activity {
 	 */
 	public boolean onCreateOptionsMenu(Menu menu) {
 		boolean result = super.onCreateOptionsMenu(menu);
-		menu.add("Go Back");
-		menu.add("Save Pic");
-		menu.add("Get Saved Pic");
-		menu.add("Share With Friends");
+		//menu.add("Go Back");
+		//menu.add("Save Pic");
+		//menu.add("Get Saved Pic");
+		//menu.add("Share With Friends");
+		menu.add("View Favorites");
 		return result;   
 	}
 
@@ -171,9 +241,9 @@ public class FatPitaPlusActivity extends Activity {
 			builder.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int item) {
 					if(items[item].equals("Email")) {
-						
-						
-						
+
+
+
 						final Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
 
 						emailIntent .setType("plain/text");
@@ -181,12 +251,12 @@ public class FatPitaPlusActivity extends Activity {
 						emailIntent .putExtra(android.content.Intent.EXTRA_SUBJECT, "Check out this pic!");
 						emailIntent .putExtra(android.content.Intent.EXTRA_TEXT, "I found this on my fatpita Plus app: "+appState.getURL());
 						startActivity(Intent.createChooser(emailIntent, "Send mail..."));
-						
+
 					}
 					else if(items[item].equals("SMS")) {
 						Intent picMessageIntent = new Intent(android.content.Intent.ACTION_SEND);
 						picMessageIntent.setType("image/jpeg");
-					
+
 						ByteArrayOutputStream stream = new ByteArrayOutputStream();
 						InputStream is = null;
 						try {
@@ -200,9 +270,9 @@ public class FatPitaPlusActivity extends Activity {
 						Drawable d = Drawable.createFromStream(is, "src name"); 
 						Bitmap b = ((BitmapDrawable)d ).getBitmap();
 						ContentValues values = new ContentValues();
-						   values.put("address", "703");
-						   values.put("body", "hi");
-						   getContentResolver().insert(Uri.parse("content://sms/sent"), values);
+						values.put("address", "703");
+						values.put("body", "hi");
+						getContentResolver().insert(Uri.parse("content://sms/sent"), values);
 
 					}
 				}
@@ -210,7 +280,80 @@ public class FatPitaPlusActivity extends Activity {
 			AlertDialog alert = builder.create();
 			alert.show();
 		}
+		else if(item.getTitle().equals("View Favorites")) {
+			String sites = "";
+			FileInputStream fis = null;
+			try {
+				fis = openFileInput("favList");
+
+				int buff;
+				while((buff=fis.read()) != -1) {
+					byte buffArr[] = {(byte) buff};
+					sites += new String(buffArr);
+				}
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			//Toast.makeText(this, sites, Toast.LENGTH_LONG).show();
+
+
+			String sitesArr[] = sites.split(" ");
+			Intent i = new Intent(FatPitaPlusActivity.this, FavActivity.class);
+			i.putExtra("sites", sitesArr);
+			startActivityForResult(i, 100);
+		}
 		return true;
+	}
+
+	public void onActivityResult(int reqCode, int resCode, Intent data) {
+		if(reqCode == 100) {
+			// Returning form FavActivity
+			
+			if(resCode == 100) {
+				String url = data.getExtras().getString("url");
+				Log.d("fatpita", "User picked "+url);
+
+				iv.setImageDrawable(loadImage(url));
+
+
+				appState.getHistory().add(url);
+				appState.setBackCursor(appState.getHistory().size()-1);
+				appState.setURL(url);
+
+				mHandler.post(new Runnable() {
+
+					public void run() {
+						if(!appState.getFavList().contains(appState.getURL())) {
+							favButton.setBackgroundResource(android.R.drawable.btn_star);
+						}
+						else {
+							favButton.setBackgroundResource(android.R.drawable.btn_star_big_on);
+						}
+					}
+				});
+
+			}
+			else if(resCode == RESULT_CANCELED) {
+				// Do nothing
+			}
+			else if(resCode == 101) {
+				FileOutputStream fos = null;
+				try {
+					Log.d("fatpita", "Opening file favList");
+					fos = openFileOutput("favList", Context.MODE_PRIVATE);
+					fos.write("".getBytes());
+					fos.close();
+				} 
+				catch (FileNotFoundException e) {Log.d("fatpita", "Could not find file favList");} 
+				catch (IOException e) {Log.d("fatpita", "Could not close file favList");}
+				
+			}
+			Toast.makeText(this, "Tap anywhere for another pic!", Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	public void goBack() {
@@ -218,6 +361,13 @@ public class FatPitaPlusActivity extends Activity {
 			appState.setBackCursor(appState.getBackCursor()-1);
 			iv.setImageDrawable(loadImage(appState.getHistory().get(appState.getBackCursor())));
 			appState.setURL(appState.getHistory().get(appState.getBackCursor()));
+
+			if(!appState.getFavList().contains(appState.getURL())) {
+				favButton.setBackgroundResource(android.R.drawable.btn_star);
+			}
+			else {
+				favButton.setBackgroundResource(android.R.drawable.btn_star_big_on);
+			}
 		}
 	}
 
@@ -245,6 +395,13 @@ public class FatPitaPlusActivity extends Activity {
 		appState.getHistory().add(url);
 		appState.setBackCursor(appState.getHistory().size()-1);
 		appState.setURL(url);
+
+		if(!appState.getFavList().contains(appState.getURL())) {
+			favButton.setBackgroundResource(android.R.drawable.btn_star);
+		}
+		else {
+			favButton.setBackgroundResource(android.R.drawable.btn_star_big_on);
+		}
 
 		return d;
 	}
