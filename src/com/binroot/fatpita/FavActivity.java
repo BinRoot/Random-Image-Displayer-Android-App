@@ -128,7 +128,7 @@ public class FavActivity extends Activity {
 			try { 
 				InputStream is = (InputStream) new URL(url).getContent(); 
 				BitmapFactory.Options options=new BitmapFactory.Options();
-				options.inSampleSize = 3;
+				options.inSampleSize = 10;
 				Bitmap preview_bitmap=BitmapFactory.decodeStream(is,null,options);
 
 				return preview_bitmap; 

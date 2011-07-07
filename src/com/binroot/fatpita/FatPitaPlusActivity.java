@@ -1,26 +1,18 @@
 package com.binroot.fatpita;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -35,24 +27,75 @@ import android.widget.Toast;
 
 public class FatPitaPlusActivity extends Activity {
 
-	ImageView iv;
 	ApplicationStart appState;
+	ImageView iv;
 	private static ProgressDialog Dialog;
 	Button mainButton;
+	Button backButton;
 	Button favButton;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		iv = (ImageView) findViewById(R.id.img);
-		mHandler = new Handler();
 		favButton = (Button) findViewById(R.id.button_fav);
+		backButton = (Button) findViewById(R.id.button_back);
+		mHandler = new Handler();
+		appState = ((ApplicationStart)getApplicationContext());
 
 		Toast.makeText(this, "Tap anywhere for another pic!", Toast.LENGTH_SHORT).show();;
 		
-		appState = ((ApplicationStart)getApplicationContext());
+		this.storageSetup();
+		
+		// Show initial image
+		if(appState.getURL()!=null) {
+			updateImage(appState.getURL());
+		}
+		else {
+			updateImage();
+		}
 
 
+		mainButton = (Button) findViewById(R.id.button);
+		mainButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				mHandler.post(new Runnable() {
+					public void run() {
+						mainButton.setBackgroundResource(R.drawable.clicked);
+						updateImage();
+					}
+				});
+			}
+		});
+
+		
+		backButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				goBack();
+			}
+		});
+
+		favButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				if(appState.getFavList().contains(appState.getURL())) {
+					appState.removeFav(appState.getURL());
+					favButton.setBackgroundResource(android.R.drawable.btn_star);
+				}
+				else {
+					appState.addFav(appState.getURL());
+					favButton.setBackgroundResource(android.R.drawable.btn_star_big_on);
+					String url = appState.getURL();
+					addToFav(url);
+				}
+
+			}
+		});
+	}
+	
+	/**
+	 * If favList file doesn't exist, create it.
+	 */
+	private void storageSetup() {
 		FileInputStream fis = null;
 		try {
 			Log.d("fatpita", "Opening file favList");
@@ -75,56 +118,12 @@ public class FatPitaPlusActivity extends Activity {
 		} catch (IOException e) {
 			Log.d("fatpita", "Could not close fis");
 		}
-
-
-
-		if(appState.getURL()!=null) {
-			updateImage(appState.getURL());
-		}
-		else {
-			updateImage();
-		}
-
-
-
-		mainButton = (Button) findViewById(R.id.button);
-		mainButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				mHandler.post(new Runnable() {
-					public void run() {
-						// TODO: dialog box starts here
-						mainButton.setBackgroundResource(R.drawable.clicked);
-						updateImage();
-					}
-				});
-			}
-		});
-
-		Button backButton = (Button) findViewById(R.id.button_back);
-		backButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				goBack();
-			}
-		});
-
-
-		favButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				if(appState.getFavList().contains(appState.getURL())) {
-					appState.removeFav(appState.getURL());
-					favButton.setBackgroundResource(android.R.drawable.btn_star);
-				}
-				else {
-					appState.addFav(appState.getURL());
-					favButton.setBackgroundResource(android.R.drawable.btn_star_big_on);
-					String url = appState.getURL();
-					addToFav(url);
-				}
-
-			}
-		});
 	}
 
+	/**
+	 * Add the current URL to the list of favorite images
+	 * @param url - Full URL of image
+	 */
 	private void addToFav(String url) {
 		FileOutputStream fos = null;
 		try {
@@ -139,11 +138,19 @@ public class FatPitaPlusActivity extends Activity {
 		catch (IOException e) {Log.d("fatpita", "Could not close file favList");}
 	}
 
+	/**
+	 * Pick a random URL and pass it over to updateImage(String url)
+	 */
 	private void updateImage() {
 		String url = randomURL();
 		updateImage(url);
 	}
 
+	/**
+	 * Download the image and post it to the ImageView. 
+	 * Also sets the favButton to on or off accordingly
+	 * @param url - URL of image to download and display
+	 */
 	private void updateImage(String url) {
 		appState.setURL(url);
 
@@ -163,10 +170,6 @@ public class FatPitaPlusActivity extends Activity {
 	 */
 	public boolean onCreateOptionsMenu(Menu menu) {
 		boolean result = super.onCreateOptionsMenu(menu);
-		//menu.add("Go Back");
-		//menu.add("Save Pic");
-		//menu.add("Get Saved Pic");
-		//menu.add("Share With Friends");
 		menu.add("View Favorites");
 		return result;   
 	}
@@ -176,111 +179,7 @@ public class FatPitaPlusActivity extends Activity {
 	 * Menu event listener
 	 */
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if(item.getTitle().equals("Go Back")) {
-			mHandler.post(new Runnable() {
-				public void run() {
-					goBack();
-				}
-			});
-		}
-		else if(item.getTitle().equals("Save Pic")) {
-			String FILENAME = "favpic";
-
-			FileOutputStream fos = null;
-			try {
-				fos = openFileOutput(FILENAME, Context.MODE_WORLD_READABLE);
-			} catch (FileNotFoundException e2) {
-				e2.printStackTrace();
-			}
-
-			InputStream is = null;
-			try {
-				is = (InputStream) new URL(appState.getURL()).getContent();
-			} catch (MalformedURLException e1) {
-				e1.printStackTrace();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-
-			Drawable d = Drawable.createFromStream(is, "src name"); 
-			Bitmap b = ((BitmapDrawable)d ).getBitmap();
-
-			ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			b.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-			byte[] imageInByte = stream.toByteArray();
-
-			try {
-				fos.write(imageInByte);
-				fos.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		else if(item.getTitle().equals("Get Saved Pic")) {
-			FileInputStream fis = null;
-			try {
-				fis = openFileInput("favpic");
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-
-			Bitmap b = BitmapFactory.decodeStream(fis);
-			iv.setImageBitmap(b);
-
-			try {
-				fis.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		else if(item.getTitle().equals("Share With Friends")) {
-			final CharSequence[] items = {"Email", "SMS"};
-
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle("Share with...");
-			builder.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int item) {
-					if(items[item].equals("Email")) {
-
-
-
-						final Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
-
-						emailIntent .setType("plain/text");
-						emailIntent .putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{""});
-						emailIntent .putExtra(android.content.Intent.EXTRA_SUBJECT, "Check out this pic!");
-						emailIntent .putExtra(android.content.Intent.EXTRA_TEXT, "I found this on my fatpita Plus app: "+appState.getURL());
-						startActivity(Intent.createChooser(emailIntent, "Send mail..."));
-
-					}
-					else if(items[item].equals("SMS")) {
-						Intent picMessageIntent = new Intent(android.content.Intent.ACTION_SEND);
-						picMessageIntent.setType("image/jpeg");
-
-						ByteArrayOutputStream stream = new ByteArrayOutputStream();
-						InputStream is = null;
-						try {
-							is = (InputStream) new URL(appState.getURL()).getContent();
-						} catch (MalformedURLException e1) {
-							e1.printStackTrace();
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-
-						Drawable d = Drawable.createFromStream(is, "src name"); 
-						Bitmap b = ((BitmapDrawable)d ).getBitmap();
-						ContentValues values = new ContentValues();
-						values.put("address", "703");
-						values.put("body", "hi");
-						getContentResolver().insert(Uri.parse("content://sms/sent"), values);
-
-					}
-				}
-			});
-			AlertDialog alert = builder.create();
-			alert.show();
-		}
-		else if(item.getTitle().equals("View Favorites")) {
+		if(item.getTitle().equals("View Favorites")) {
 			String sites = "";
 			FileInputStream fis = null;
 			try {
@@ -298,9 +197,6 @@ public class FatPitaPlusActivity extends Activity {
 				e.printStackTrace();
 			}
 
-			//Toast.makeText(this, sites, Toast.LENGTH_LONG).show();
-
-
 			String sitesArr[] = sites.split(" ");
 			Intent i = new Intent(FatPitaPlusActivity.this, FavActivity.class);
 			i.putExtra("sites", sitesArr);
@@ -317,7 +213,7 @@ public class FatPitaPlusActivity extends Activity {
 				String url = data.getExtras().getString("url");
 				Log.d("fatpita", "User picked "+url);
 
-				iv.setImageDrawable(loadImage(url));
+				iv.setImageBitmap(loadImage(url));
 
 
 				appState.getHistory().add(url);
@@ -340,7 +236,7 @@ public class FatPitaPlusActivity extends Activity {
 			else if(resCode == RESULT_CANCELED) {
 				// Do nothing
 			}
-			else if(resCode == 101) {
+			else if(resCode == 101) { // Clear All
 				FileOutputStream fos = null;
 				try {
 					Log.d("fatpita", "Opening file favList");
@@ -356,10 +252,13 @@ public class FatPitaPlusActivity extends Activity {
 		}
 	}
 
+	/**
+	 * Sets image depending on cursor position
+	 */
 	public void goBack() {
 		if(appState.getBackCursor()!=0) {
 			appState.setBackCursor(appState.getBackCursor()-1);
-			iv.setImageDrawable(loadImage(appState.getHistory().get(appState.getBackCursor())));
+			iv.setImageBitmap(loadImage(appState.getHistory().get(appState.getBackCursor())));
 			appState.setURL(appState.getHistory().get(appState.getBackCursor()));
 
 			if(!appState.getFavList().contains(appState.getURL())) {
@@ -372,26 +271,31 @@ public class FatPitaPlusActivity extends Activity {
 	}
 
 	/**
-	 * Save url loading
-	 * @param url - The url of an image
-	 * @return A Drawable image from url
+	 * Safe url loading. Does not record history.
+	 * @param url - The URL of an image
+	 * @return A Bitmap image from url
 	 */
-	private Drawable loadImage(String url) {
-		Drawable d = loadImageFromWebOperations(url);
-		while(d == null) {
+	private Bitmap loadImage(String url) {
+		Bitmap b = loadBitmapFromWebOperations(url);
+		while(b == null) {
 			url = randomURL();
-			d = loadImageFromWebOperations(url);
+			b = loadBitmapFromWebOperations(url);
 		}
-		return d;
+		return b;
 	}
 
-	private Drawable loadNewImage(String url) {
-		Drawable d = loadImageFromWebOperations(url);
-		while(d == null) {
+	/**
+	 * Safe url loading. Records history.
+	 * @param url - The URL of an image
+	 * @return A Bitmap image from url
+	 */
+	private Bitmap loadNewImage(String url) {
+		Bitmap b = loadBitmapFromWebOperations(url);
+		while(b == null) {
 			url = randomURL();
-			d = loadImageFromWebOperations(url);
+			b = loadBitmapFromWebOperations(url);
 		}
-
+		
 		appState.getHistory().add(url);
 		appState.setBackCursor(appState.getHistory().size()-1);
 		appState.setURL(url);
@@ -403,9 +307,13 @@ public class FatPitaPlusActivity extends Activity {
 			favButton.setBackgroundResource(android.R.drawable.btn_star_big_on);
 		}
 
-		return d;
+		return b;
 	}
 
+	/**
+	 * Picks a random URL
+	 * @return a random URL
+	 */
 	private String randomURL() {
 		int pick = (int)(Math.random()*3)+1;
 
@@ -423,6 +331,11 @@ public class FatPitaPlusActivity extends Activity {
 		return url;
 	}
 
+	/**
+	 * Used by randomURL() to get a url from a website
+	 * @param website - the image distributing website
+	 * @return a random URL from that website
+	 */
 	private String loadURLFrom(String website) {
 		String url = null;
 
@@ -482,6 +395,9 @@ public class FatPitaPlusActivity extends Activity {
 		return url;
 	}
 
+	/**
+	 * AsyncTask to download images
+	 */
 	private class DownloadImageTask extends AsyncTask<Void, Void, Void> {
 		/** The system calls this to perform work in a worker thread and
 		 * delivers it the parameters given to AsyncTask.execute() */
@@ -491,7 +407,7 @@ public class FatPitaPlusActivity extends Activity {
 				mHandler.post(new Runnable() {
 
 					public void run() {
-						iv.setImageDrawable(loadNewImage(appState.getURL()));
+						iv.setImageBitmap(loadNewImage(appState.getURL()));
 					}
 				});
 
@@ -522,6 +438,10 @@ public class FatPitaPlusActivity extends Activity {
 		}
 	}
 
+	/**
+	 * Randomly generates a String for the loading screen
+	 * @return a random string
+	 */
 	private String getRandomString() {
 		String retStr = "Loading";
 		String [] strList = {
@@ -551,19 +471,24 @@ public class FatPitaPlusActivity extends Activity {
 		return retStr;
 	}
 
-	private Drawable loadImageFromWebOperations(String url) 
-	{ 
+	/**
+	 * Generates a Bitmap from an image online
+	 * @param url - the URL of an image online
+	 * @return a Bitmap of the image from the URL
+	 */
+	private Bitmap loadBitmapFromWebOperations(String url) { 
 		try { 
 			InputStream is = (InputStream) new URL(url).getContent(); 
-			Drawable d = Drawable.createFromStream(is, "src name"); 
-
-			Bitmap b = ((BitmapDrawable)d ).getBitmap();
-			Log.d("fatpita", "loading image "+b.getWidth()+"x"+b.getHeight());
+			BitmapFactory.Options options=new BitmapFactory.Options();
+			options.inSampleSize = 2;
+			Bitmap preview_bitmap=BitmapFactory.decodeStream(is,null,options);
+			
+			Log.d("fatpita", "loading image "+preview_bitmap.getWidth()+"x"+preview_bitmap.getHeight());
 			// Ignore large images
-			if(b.getWidth()>1000 || b.getHeight()>1000) {
+			if(preview_bitmap.getWidth()>1000 || preview_bitmap.getHeight()>1000) {
 				return null; 
 			}
-			return d; 
+			return preview_bitmap; 
 		}
 		catch (Exception e) { 
 			Log.d("fatpita", "exception = "+e.getMessage());
