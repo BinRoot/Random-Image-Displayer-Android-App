@@ -19,8 +19,9 @@ public final class R {
         public static final int blank=0x7f020005;
         public static final int clear=0x7f020006;
         public static final int clicked=0x7f020007;
-        public static final int icon=0x7f020008;
-        public static final int icon2=0x7f020009;
+        public static final int clicked2=0x7f020008;
+        public static final int icon=0x7f020009;
+        public static final int icon2=0x7f02000a;
     }
     public static final class id {
         public static final int button=0x7f050006;

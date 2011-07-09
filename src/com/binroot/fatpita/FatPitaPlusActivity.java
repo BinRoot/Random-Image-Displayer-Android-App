@@ -61,7 +61,7 @@ public class FatPitaPlusActivity extends Activity {
 			public void onClick(View v) {
 				mHandler.post(new Runnable() {
 					public void run() {
-						mainButton.setBackgroundResource(R.drawable.clicked);
+						mainButton.setBackgroundResource(R.drawable.clicked2);
 						updateImage();
 					}
 				});
