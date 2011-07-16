@@ -61,32 +61,32 @@ public class BitmapManager {
     	this.favButton = favButton;
     }
 
-    public Bitmap fetchBitmap(String urlString) {
+    public Bitmap fetchBitmap(String urlString, boolean saveToHistory) {
     	SoftReference<Bitmap> ref = mCache.get(urlString);
     	if (ref != null && ref.get() != null) {
     		return ref.get();
     	}
 
-    	if (Constants.LOGGING) Log.d(TAG, "image url:" + urlString);
+    	Log.d(TAG, "image url:" + urlString);
     	
     	try {
-    		Bitmap bitmap = readBitmapFromNetwork(urlString);
+    		Bitmap bitmap = readBitmapFromNetwork(urlString, saveToHistory);
     		mCache.put(urlString, new SoftReference<Bitmap>(bitmap));
 //    		if (Constants.LOGGING) Log.d(this.getClass().getSimpleName(), "got a thumbnail drawable: " + drawable.getBounds() + ", "
 //    				+ drawable.getIntrinsicHeight() + "," + drawable.getIntrinsicWidth() + ", "
 //    				+ drawable.getMinimumHeight() + "," + drawable.getMinimumWidth());
     		return bitmap;
     	} catch (Exception e) {
-    		if (Constants.LOGGING) Log.e(TAG, "fetchBitmap failed", e);
+    		Log.e(TAG, "fetchBitmap failed", e);
     		return null;
     	}
     }
 
-    public void fetchBitmapOnThread(final String urlString, final ImageView imageView) {
-    	fetchBitmapOnThread(urlString, imageView, null, null);
+    public void fetchBitmapOnThread(final String urlString, final ImageView imageView, boolean saveToHistory) {
+    	fetchBitmapOnThread(urlString, imageView, null, null, saveToHistory);
     }
     
-    public void fetchBitmapOnThread(final String urlString, final ImageView imageView, final ProgressBar indeterminateProgressBar, final Activity act) {
+    public void fetchBitmapOnThread(final String urlString, final ImageView imageView, final ProgressBar indeterminateProgressBar, final Activity act, final boolean saveToHistory) {
     	SoftReference<Bitmap> ref = mCache.get(urlString);
     	if (ref != null && ref.get() != null) {
     		imageView.setImageBitmap(ref.get());
@@ -124,7 +124,7 @@ public class BitmapManager {
     		public void run() {
     			if (indeterminateProgressBar != null && act != null)
     				act.runOnUiThread(progressBarShow);
-    			Bitmap bitmap = fetchBitmap(urlString);
+    			Bitmap bitmap = fetchBitmap(urlString, saveToHistory);
     			Message message = handler.obtainMessage(1, bitmap);
     			handler.sendMessage(message);
     		}
@@ -151,7 +151,7 @@ public class BitmapManager {
 	 * @param url The URL to read the bitmap from.
 	 * @return A Bitmap image or null if an error occurs.
 	 */
-	public Bitmap readBitmapFromNetwork( String url ) {
+	public Bitmap readBitmapFromNetwork( String url, boolean saveToHistory ) {
 		
 		InputStream is = null;
 		BufferedInputStream bis = null;
@@ -187,8 +187,12 @@ public class BitmapManager {
 		}
 		
 		appState.setURL(url);
-		appState.getHistory().add(url);
-		appState.setBackCursor(appState.getHistory().size()-1);
+		if(saveToHistory) {
+			appState.getHistory().add(url);
+			appState.setBackCursor(appState.getHistory().size()-1);
+		}
+		
+		
 
 		if(!appState.getFavList().contains(appState.getURL())) {
 			favButton.setBackgroundResource(android.R.drawable.btn_star);
