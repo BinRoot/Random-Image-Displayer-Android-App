@@ -23,25 +23,31 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 public class FatPitaPlusActivity extends Activity {
 
 	ApplicationStart appState;
 	ImageView iv;
-	private static ProgressDialog Dialog;
+	//private static ProgressDialog Dialog;
+	private static ProgressBar pBar;
 	Button mainButton;
 	Button backButton;
 	Button favButton;
+	BitmapManager bitmapManager;
 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
+		pBar = (ProgressBar) findViewById(R.id.progressbar);
 		iv = (ImageView) findViewById(R.id.img);
 		favButton = (Button) findViewById(R.id.button_fav);
 		backButton = (Button) findViewById(R.id.button_back);
 		mHandler = new Handler();
 		appState = ((ApplicationStart)getApplicationContext());
+		bitmapManager = new BitmapManager(appState, favButton);
 
 		Toast.makeText(this, "Tap anywhere for another pic!", Toast.LENGTH_SHORT).show();;
 		
@@ -61,7 +67,6 @@ public class FatPitaPlusActivity extends Activity {
 			public void onClick(View v) {
 				mHandler.post(new Runnable() {
 					public void run() {
-						mainButton.setBackgroundResource(R.drawable.clicked2);
 						updateImage();
 					}
 				});
@@ -153,7 +158,7 @@ public class FatPitaPlusActivity extends Activity {
 	 */
 	private void updateImage(String url) {
 		appState.setURL(url);
-
+		
 		if(!appState.getFavList().contains(appState.getURL())) {
 			favButton.setBackgroundResource(android.R.drawable.btn_star);
 		}
@@ -407,7 +412,8 @@ public class FatPitaPlusActivity extends Activity {
 				mHandler.post(new Runnable() {
 
 					public void run() {
-						iv.setImageBitmap(loadNewImage(appState.getURL()));
+						//iv.setImageBitmap(loadNewImage(appState.getURL()));
+						bitmapManager.fetchBitmapOnThread(appState.getURL(), iv, pBar, FatPitaPlusActivity.this);
 					}
 				});
 
@@ -417,23 +423,11 @@ public class FatPitaPlusActivity extends Activity {
 
 		@Override
 		protected void onPostExecute(Void result) {
-			mHandler.post(new Runnable() {
-				public void run() {
-					mainButton.setBackgroundResource(R.drawable.clear);
-				}
-			});
 			Log.d("fatpita","* PostExecute");
-			Dialog.dismiss();
 		}
 
 		@Override
 		protected void onPreExecute(){
-			Log.d("Async","Dialog shown!");
-			String rand = getRandomString();
-			Dialog = new ProgressDialog(FatPitaPlusActivity.this);
-			Dialog.setMax(100);
-			Dialog.setMessage(rand);
-			Dialog.show();
 			//Dialog = ProgressDialog.show(FatPitaPlusActivity.this, "", rand, true);
 		}
 	}
@@ -462,9 +456,7 @@ public class FatPitaPlusActivity extends Activity {
 				"Gonna love this...",
 				"Here it comes...",
 				"Almost here...",
-				"LOL...",
-				"OMG...",
-				"WTF..."
+				"LOL..."
 		};
 		int randIndex = (int) (Math.random()*strList.length);
 		retStr = strList[randIndex];

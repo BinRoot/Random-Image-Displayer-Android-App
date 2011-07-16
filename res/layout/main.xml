@@ -32,6 +32,11 @@
 			android:layout_marginRight="10dip"/>
     </RelativeLayout>
 	
+	<ProgressBar 
+		android:id="@+id/progressbar"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_centerInParent="true"/>
 	<ImageView 
 		android:id="@+id/img"
 		android:layout_below="@+id/layout_relative_top"
