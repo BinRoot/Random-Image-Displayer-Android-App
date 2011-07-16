@@ -4,15 +4,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,7 +25,6 @@ public class FatPitaPlusActivity extends Activity {
 
 	ApplicationStart appState;
 	ImageView iv;
-	//private static ProgressDialog Dialog;
 	private static ProgressBar pBar;
 	Button mainButton;
 	Button backButton;
@@ -87,6 +81,7 @@ public class FatPitaPlusActivity extends Activity {
 					favButton.setBackgroundResource(android.R.drawable.btn_star);
 				}
 				else {
+					Toast.makeText(getApplicationContext(), "Click menu to see your favorites", Toast.LENGTH_LONG).show();
 					appState.addFav(appState.getURL());
 					favButton.setBackgroundResource(android.R.drawable.btn_star_big_on);
 					String url = appState.getURL();
@@ -103,25 +98,25 @@ public class FatPitaPlusActivity extends Activity {
 	private void storageSetup() {
 		FileInputStream fis = null;
 		try {
-			Log.d("fatpita", "Opening file favList");
+			//Log.d("fatpita", "Opening file favList");
 			fis = openFileInput("favList");
 			fis.close();
 		} catch (FileNotFoundException e) {
-			Log.d("fatpita", "Could not find favList");
+			//Log.d("fatpita", "Could not find favList");
 
 			FileOutputStream fos = null;
 			try {
-				Log.d("fatpita", "Creating favList");
+				//Log.d("fatpita", "Creating favList");
 				fos = openFileOutput("favList", Context.MODE_PRIVATE);
 				fos.close();
 
 			} catch (FileNotFoundException e2) {
-				Log.d("fatpita", "Could not create favList");
+				//Log.d("fatpita", "Could not create favList");
 			} catch (IOException e3) {
-				Log.d("fatpita", "Could not close fos");
+				//Log.d("fatpita", "Could not close fos");
 			}
 		} catch (IOException e) {
-			Log.d("fatpita", "Could not close fis");
+			//Log.d("fatpita", "Could not close fis");
 		}
 	}
 
@@ -132,7 +127,7 @@ public class FatPitaPlusActivity extends Activity {
 	private void addToFav(String url) {
 		FileOutputStream fos = null;
 		try {
-			Log.d("fatpita", "Opening file favList");
+			//Log.d("fatpita", "Opening file favList");
 			fos = openFileOutput("favList", Context.MODE_APPEND);
 
 			fos.write(url.getBytes());
@@ -216,7 +211,7 @@ public class FatPitaPlusActivity extends Activity {
 			
 			if(resCode == 100) {
 				String url = data.getExtras().getString("url");
-				Log.d("fatpita", "User picked "+url);
+				//Log.d("fatpita", "User picked "+url);
 
 				appState.setURL(url);
 				new DownloadImageTask().execute();
@@ -240,7 +235,7 @@ public class FatPitaPlusActivity extends Activity {
 			else if(resCode == 101) { // Clear All
 				FileOutputStream fos = null;
 				try {
-					Log.d("fatpita", "Opening file favList");
+					//Log.d("fatpita", "Opening file favList");
 					fos = openFileOutput("favList", Context.MODE_PRIVATE);
 					fos.write("".getBytes());
 					fos.close();
@@ -290,7 +285,7 @@ public class FatPitaPlusActivity extends Activity {
 		 * delivers it the parameters given to AsyncTask.execute() */
 		protected Void doInBackground(Void... arg0) {
 			try {
-				Log.d("fatpita", "* Loading now!");
+				//Log.d("fatpita", "* Loading now!");
 				mHandler.post(new Runnable() {
 
 					public void run() {
@@ -305,7 +300,7 @@ public class FatPitaPlusActivity extends Activity {
 
 		@Override
 		protected void onPostExecute(Void result) {
-			Log.d("fatpita","* PostExecute");
+			//Log.d("fatpita","* PostExecute");
 		}
 
 		@Override

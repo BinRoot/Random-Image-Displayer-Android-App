@@ -1,12 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<GridView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/myGrid" 
-    android:layout_width="fill_parent" 
-    android:layout_height="fill_parent"
-    android:numColumns="auto_fit"
-    android:verticalSpacing="10dp"
-    android:horizontalSpacing="10dp"
-    android:columnWidth="90dp"
-    android:stretchMode="columnWidth"
-    android:gravity="center">
-</GridView>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+	
+	 <RelativeLayout 
+    	android:id="@+id/layout_relative_top_grid"
+    	android:layout_width="fill_parent"
+    	android:layout_height="50dip"
+    	android:background="@android:drawable/divider_horizontal_dark">
+    	<Button 
+			android:id="@+id/button_back_grid"
+			android:layout_centerVertical="true"
+			android:layout_width="50dip"
+			android:layout_height="50dip"
+			android:layout_marginLeft="10dip"
+			android:layout_alignParentLeft="true"
+			android:background="@android:drawable/ic_input_delete"/>
+		<TextView 
+			android:id="@+id/text_loading_grid"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Favorites"
+			android:textAppearance="@android:style/TextAppearance.Medium"
+			android:layout_centerInParent="true"/>
+	
+    </RelativeLayout>
+	<GridView 
+	    android:id="@+id/myGrid" 
+	    android:layout_below="@id/layout_relative_top_grid"
+	    android:layout_width="fill_parent" 
+	    android:layout_height="fill_parent"
+	    android:numColumns="auto_fit"
+	    android:verticalSpacing="10dp"
+	    android:horizontalSpacing="10dp"
+	    android:columnWidth="90dp"
+	    android:stretchMode="columnWidth"
+	    android:gravity="center">
+	</GridView>
+</RelativeLayout>
