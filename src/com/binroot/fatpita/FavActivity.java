@@ -130,79 +130,52 @@ public class FavActivity extends Activity {
 
 	Handler mHandler = new Handler();
 
-	public class ImageAdapter extends BaseAdapter {
-		public ImageAdapter(Context c) {
-			mContext = c;
-		}
+	public class ImageAdapter extends BaseAdapter  
+	{  
+	    Context context;  
 
-		public int getCount() {
-			return urlList.size();
-		}
-
+	    public ImageAdapter (Context c)  {  
+	        context = c;  
+	    }  
+	  
+	    public int getCount() {  
+	        return urlList.size();
+	    }  
+	  
+	    
+		@Override
 		public Object getItem(int position) {
-			return position;
+			return null;
 		}
 
+		@Override
 		public long getItemId(int position) {
-			return position;
+			return 0;
 		}
-		ImageView imageView;
+
+		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			if (convertView == null) {
-				imageView = new ImageView(mContext);
-				imageView.setLayoutParams(new GridView.LayoutParams(140, 140));
+			ImageView imageView;  
+			  
+	        if (convertView == null) {  // if it's not recycled, initialize some attributes  
+	            imageView = new ImageView (context);  
+	            imageView.setScaleType (ImageView.ScaleType.CENTER_CROP);
+	            imageView.setLayoutParams(new GridView.LayoutParams(140, 140));
 				imageView.setAdjustViewBounds(false);
-				imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-
-			} else {
-				imageView = (ImageView) convertView;
-			}
-
-			//imageView.setImageDrawable(loadImageFromWebOperations("http://media.smashingmagazine.com/images/rss/rss_icon.jpg"));
-
-			DownloadImagesTask task1 = new DownloadImagesTask();
-			task1.setImageView(imageView);
-			task1.execute(urlList.get(position));
-
-			return imageView;
-		}
-
-
-		class DownloadImagesTask extends AsyncTask<String, Integer, Bitmap> {
-
-			private int imageViewID;
-			private ImageView iv;
-
-			protected void onPostExecute(Bitmap bitmap1) {
-				iv.setImageBitmap(bitmap1);
-			}
-
-			public void setImageView(ImageView iv) {
-				this.iv = iv;
-			}
-
-			protected Bitmap doInBackground(String... url) {
-				Bitmap bitmap1 = loadImageFromWebOperations(url[0]);
-				return bitmap1;
-			}
-		}
-
-		private Bitmap loadImageFromWebOperations(String url) { 
-			try { 
-				InputStream is = (InputStream) new URL(url).getContent(); 
-				BitmapFactory.Options options=new BitmapFactory.Options();
-				options.inSampleSize = 10;
-				Bitmap preview_bitmap=BitmapFactory.decodeStream(is,null,options);
-
-				return preview_bitmap; 
-			}
-			catch (Exception e) { 
-				Log.d("fatpita", "exception = "+e.getMessage());
-				return null; 
-			} 
-		}
-
-		private Context mContext;
+	        } else {  
+	            imageView = (ImageView)convertView;  
+	        }  
+	        
+	        
+	        BitmapManager2 bm = new BitmapManager2();
+	        String thumbIds [] = new String[urlList.size()];
+	        thumbIds = urlList.toArray(thumbIds);
+	        
+	        bm.fetchBitmapOnThread(thumbIds[position], imageView, 6);
+	        //imageView.setImageResource (thumbIds[position]);  
+	      
+	        return imageView;  
+		}  
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {

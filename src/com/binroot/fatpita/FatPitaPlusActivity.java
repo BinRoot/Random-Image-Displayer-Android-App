@@ -171,6 +171,7 @@ public class FatPitaPlusActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		boolean result = super.onCreateOptionsMenu(menu);
 		menu.add("View Favorites");
+		menu.add("Share");
 		return result;   
 	}
 
@@ -201,6 +202,14 @@ public class FatPitaPlusActivity extends Activity {
 			Intent i = new Intent(FatPitaPlusActivity.this, FavActivity.class);
 			i.putExtra("sites", sitesArr);
 			startActivityForResult(i, 100);
+		}
+		else if(item.getTitle().equals("Share")) {
+			final Intent intent = new Intent(Intent.ACTION_SEND);
+	        intent.setType("text/plain");
+	        intent.putExtra(Intent.EXTRA_SUBJECT, "Check this out!");
+	        intent.putExtra(Intent.EXTRA_TEXT, " \n " + "From my fatpita+ app: "+appState.getURL());
+
+	        startActivity(Intent.createChooser(intent, "Share"));
 		}
 		return true;
 	}
