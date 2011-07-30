@@ -35,6 +35,8 @@ public class FatPitaPlusActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		
+		PinchView mWebView = (PinchView) findViewById(R.id.imgdetail_webview);
+		
 		pBar = (ProgressBar) findViewById(R.id.progressbar);
 		iv = (ImageView) findViewById(R.id.img);
 		favButton = (Button) findViewById(R.id.button_fav);
