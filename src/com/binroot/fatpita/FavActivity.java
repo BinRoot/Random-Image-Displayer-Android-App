@@ -140,20 +140,18 @@ public class FavActivity extends Activity {
 	  
 	    public int getCount() {  
 	        return urlList.size();
-	    }  
-	  
-	    
-		@Override
+	    }
+
 		public Object getItem(int position) {
-			return null;
+			// TODO Auto-generated method stub
+			return urlList.get(position);
 		}
 
-		@Override
 		public long getItemId(int position) {
-			return 0;
+			// TODO Auto-generated method stub
+			return position;
 		}
 
-		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			ImageView imageView;  
 			  
@@ -172,10 +170,10 @@ public class FavActivity extends Activity {
 	        thumbIds = urlList.toArray(thumbIds);
 	        
 	        bm.fetchBitmapOnThread(thumbIds[position], imageView, 6);
-	        //imageView.setImageResource (thumbIds[position]);  
-	      
-	        return imageView;  
+
+	        return imageView; 
 		}  
+	  
 	}
 
 	public boolean onCreateOptionsMenu(Menu menu) {
