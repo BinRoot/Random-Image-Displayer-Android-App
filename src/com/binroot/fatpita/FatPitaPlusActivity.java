@@ -310,6 +310,49 @@ public class FatPitaPlusActivity extends Activity {
     	dlTask.execute(source);
 	}
 
+	
+	public void onActivityResult(int reqCode, int resCode, Intent data) {
+		if(reqCode == 100) {
+			// Returning form FavActivity
+
+			if(resCode == 100) {
+				String url = data.getExtras().getString("url");
+				//Log.d("fatpita", "User picked "+url);
+
+				appState.setURL(url);
+				new DownloadImageTask().execute();
+
+				mHandler.post(new Runnable() {
+
+					public void run() {
+						if(!appState.getFavList().contains(appState.getURL())) {
+							favButton.setBackgroundResource(android.R.drawable.btn_star);
+						}
+						else {
+							favButton.setBackgroundResource(android.R.drawable.btn_star_big_on);
+						}
+					}
+				});
+
+			}
+			else if(resCode == RESULT_CANCELED) {
+				// Do nothing
+			}
+			else if(resCode == 101) { // Clear All
+				FileOutputStream fos = null;
+				try {
+					//Log.d("fatpita", "Opening file favList");
+					fos = openFileOutput("favList", Context.MODE_PRIVATE);
+					fos.write("".getBytes());
+					fos.close();
+				} 
+				catch (FileNotFoundException e) {Log.d("fatpita", "Could not find file favList");} 
+				catch (IOException e) {Log.d("fatpita", "Could not close file favList");}
+
+			}
+			Toast.makeText(this, "Tap anywhere for another pic!", Toast.LENGTH_SHORT).show();
+		}
+	}
 
 	/**
 	 * Sets image depending on cursor position
@@ -331,11 +374,6 @@ public class FatPitaPlusActivity extends Activity {
 		}
 	}
 
-	/**
-	 * Safe url loading. Does not record history.
-	 * @param url - The URL of an image
-	 * @return A Bitmap image from url
-	 */
 	
 
 	
