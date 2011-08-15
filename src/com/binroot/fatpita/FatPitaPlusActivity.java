@@ -8,6 +8,7 @@ import java.io.IOException;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -34,8 +36,6 @@ public class FatPitaPlusActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		
-		PinchView mWebView = (PinchView) findViewById(R.id.imgdetail_webview);
 		
 		pBar = (ProgressBar) findViewById(R.id.progressbar);
 		iv = (ImageView) findViewById(R.id.img);
@@ -66,6 +66,15 @@ public class FatPitaPlusActivity extends Activity {
 						updateImage();
 					}
 				});
+			}
+		});
+		
+		mainButton.setOnLongClickListener(new OnLongClickListener() {
+			public boolean onLongClick(View v) {
+				Intent i = new Intent(Intent.ACTION_VIEW);
+				i.setData(Uri.parse(appState.getURL()));
+				startActivity(i);
+				return true;
 			}
 		});
 
